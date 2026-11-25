@@ -86,7 +86,7 @@ const PROVIDER_PRESETS: {
     provider: "Groq",
     format: "openai",
     base_url: "https://api.groq.com/openai/v1",
-    models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"],
+    models: ["openai/gpt-oss-120b", "llama-3.1-8b-instant", "gemma2-9b-it"],
     rate_per_second: 0.5,
     rate_per_minute: 30,
     context_window_k: 128,
