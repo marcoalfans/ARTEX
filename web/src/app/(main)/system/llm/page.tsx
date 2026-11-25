@@ -71,6 +71,59 @@ const EFFORT_LEVELS: { value: string; label: string }[] = [
   { value: "max", label: "max" },
 ];
 
+// ── Quick-add presets (free-tier providers, no credit card needed) ──────────
+const PROVIDER_PRESETS: {
+  provider: string;
+  format: ProfileFormat;
+  base_url: string;
+  models: string[];
+  rate_per_second: number;
+  rate_per_minute: number;
+  context_window_k: number;
+  description: string;
+}[] = [
+  {
+    provider: "Groq",
+    format: "openai",
+    base_url: "https://api.groq.com/openai/v1",
+    models: ["llama-3.3-70b-versatile", "llama-3.1-8b-instant", "mixtral-8x7b-32768"],
+    rate_per_second: 0.5,
+    rate_per_minute: 30,
+    context_window_k: 128,
+    description: "Free tier, fast inference",
+  },
+  {
+    provider: "OpenRouter",
+    format: "openai",
+    base_url: "https://openrouter.ai/api/v1",
+    models: ["meta-llama/llama-3.3-70b-instruct:free", "google/gemma-2-9b-it:free"],
+    rate_per_second: 0.3,
+    rate_per_minute: 20,
+    context_window_k: 128,
+    description: "Free models, multi-provider gateway",
+  },
+  {
+    provider: "Google AI Studio",
+    format: "openai",
+    base_url: "https://generativelanguage.googleapis.com/v1beta/openai",
+    models: ["gemini-2.0-flash", "gemini-1.5-flash", "gemini-1.5-pro"],
+    rate_per_second: 0.25,
+    rate_per_minute: 15,
+    context_window_k: 1000,
+    description: "Free tier, large context window",
+  },
+  {
+    provider: "Cerebras",
+    format: "openai",
+    base_url: "https://api.cerebras.ai/v1",
+    models: ["llama-3.3-70b", "llama-3.1-8b"],
+    rate_per_second: 0.5,
+    rate_per_minute: 30,
+    context_window_k: 128,
+    description: "Free tier, fast inference",
+  },
+];
+
 function cooldownText(secs: number) {
   if (secs <= 0) return "";
   if (secs < 60) return `${secs}s`;
@@ -378,6 +431,18 @@ function ProfileSheet({
 
   const profileId = profile ? Number(profile.id) : undefined;
 
+  function applyPreset(preset: (typeof PROVIDER_PRESETS)[number], selectedModel: string) {
+    const shortModel = selectedModel.includes("/") ? selectedModel.split("/").pop()! : selectedModel;
+    setName(`${preset.provider} · ${shortModel}`);
+    setFormat(preset.format);
+    setBaseUrl(preset.base_url);
+    setModel(selectedModel);
+    setRps(String(preset.rate_per_second));
+    setRpm(String(preset.rate_per_minute));
+    setCw(String(preset.context_window_k));
+    toast.success(`Filled from ${preset.provider} preset — paste your API key to finish`);
+  }
+
   async function loadModels() {
     if (loadingModels) return;
     setLoadingModels(true);
@@ -503,6 +568,38 @@ function ProfileSheet({
         </SheetHeader>
 
         <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto px-4 pb-4">
+          {isNew && (
+            <div className="grid gap-2">
+              <Label className="text-sm">Quick Add</Label>
+              <p className="text-muted-foreground text-xs">
+                Pick a provider and model to auto-fill — you only need to paste your API key.
+              </p>
+              <div className="grid grid-cols-2 gap-2">
+                {PROVIDER_PRESETS.map((preset) => (
+                  <div key={preset.provider} className="rounded-lg border p-2.5">
+                    <div className="mb-0.5 font-medium text-sm">{preset.provider}</div>
+                    <p className="mb-2 text-muted-foreground text-xs">{preset.description}</p>
+                    <div className="flex flex-wrap gap-1">
+                      {preset.models.map((m) => (
+                        <Button
+                          key={m}
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          className="h-6 px-2 font-mono text-xs"
+                          onClick={() => applyPreset(preset, m)}
+                        >
+                          {m.includes("/") ? m.split("/").pop() : m}
+                        </Button>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+              <Separator />
+            </div>
+          )}
+
           <div className="grid gap-4 sm:grid-cols-2">
             <div className="grid gap-2">
               <Label htmlFor="p-name">Name</Label>

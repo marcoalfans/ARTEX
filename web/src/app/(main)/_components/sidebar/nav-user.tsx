@@ -15,6 +15,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { SidebarMenu, SidebarMenuButton, SidebarMenuItem, useSidebar } from "@/components/ui/sidebar";
 import { auth } from "@/lib/auth";
+import { useTranslation } from "@/lib/i18n";
 import { getInitials } from "@/lib/utils";
 
 import { ChangePasswordDialog } from "./change-password-dialog";
@@ -29,6 +30,7 @@ export function NavUser({
   };
 }) {
   const { isMobile } = useSidebar();
+  const { t } = useTranslation();
   const [pwOpen, setPwOpen] = React.useState(false);
 
   function handleLogout() {
@@ -79,12 +81,12 @@ export function NavUser({
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={() => setPwOpen(true)}>
               <KeyRound />
-              Change password
+              {t("user.changePassword")}
             </DropdownMenuItem>
             <DropdownMenuSeparator />
             <DropdownMenuItem onClick={handleLogout} className="text-destructive focus:text-destructive">
               <LogOut />
-              Sign out
+              {t("auth.signOut")}
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>

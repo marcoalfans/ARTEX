@@ -6,6 +6,7 @@ import { usePathname } from "next/navigation";
 
 import { ChevronRight, MailIcon, PlusCircleIcon } from "lucide-react";
 import { api } from "@/lib/api";
+import { useTranslation } from "@/lib/i18n";
 
 import { Button } from "@/components/ui/button";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
@@ -87,6 +88,7 @@ function hasSubItems(item: NavMainItem): item is NavMainParentItem {
 
 export function NavMain({ items }: NavMainProps) {
   const rawPath = usePathname();
+  const { t } = useTranslation();
   // Route segments contain Chinese, so the pathname may be percent-encoded; decode it before comparing against nav urls so highlighting hits.
   const path = (() => {
     try {
@@ -118,7 +120,7 @@ export function NavMain({ items }: NavMainProps) {
         <SidebarGroup key={group.id}>
           {group.label && (
             <SidebarGroupLabel className="group-data-[collapsible=icon]:pointer-events-none">
-              {group.label}
+              {group.labelKey ? t(group.labelKey) : group.label}
             </SidebarGroupLabel>
           )}
           <SidebarGroupContent>
@@ -187,9 +189,11 @@ function InterceptPendingBadge() {
 }
 
 function NavLinkItem({ item, isActive, showIconFallback }: NavLinkItemProps) {
+  const { t } = useTranslation();
+  const label = item.titleKey ? t(item.titleKey) : item.title;
   return (
     <SidebarMenuItem>
-      <SidebarMenuButton asChild aria-disabled={item.disabled} tooltip={item.title} isActive={isActive}>
+      <SidebarMenuButton asChild aria-disabled={item.disabled} tooltip={label} isActive={isActive}>
         <Link
           prefetch={false}
           href={item.url}
@@ -197,7 +201,7 @@ function NavLinkItem({ item, isActive, showIconFallback }: NavLinkItemProps) {
           rel={item.newTab ? "noreferrer" : undefined}
         >
           <NavLinkIcon item={item} showFallback={showIconFallback} />
-          <span>{item.title}</span>
+          <span>{label}</span>
         </Link>
       </SidebarMenuButton>
       {item.id === "approvals" ? <InterceptPendingBadge /> : <NavItemBadge badge={item.badge} />}
@@ -221,14 +225,16 @@ function NavLinkIcon({ item, showFallback }: NavLinkIconProps) {
 
 function NavDropdownItem({ item, isActive, isSubItemActive }: NavDropdownItemProps) {
   const Icon = item.icon;
+  const { t } = useTranslation();
+  const label = item.titleKey ? t(item.titleKey) : item.title;
 
   return (
     <SidebarMenuItem>
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
-          <SidebarMenuButton tooltip={item.title} isActive={isActive} disabled={item.disabled}>
-            {Icon ? <Icon /> : <CollapsedIconFallback title={item.title} />}
-            <span>{item.title}</span>
+          <SidebarMenuButton tooltip={label} isActive={isActive} disabled={item.disabled}>
+            {Icon ? <Icon /> : <CollapsedIconFallback title={label} />}
+            <span>{label}</span>
           </SidebarMenuButton>
         </DropdownMenuTrigger>
 
@@ -236,6 +242,7 @@ function NavDropdownItem({ item, isActive, isSubItemActive }: NavDropdownItemPro
           <DropdownMenuGroup>
             {item.subItems.map((subItem) => {
               const SubIcon = subItem.icon;
+              const subLabel = subItem.titleKey ? t(subItem.titleKey) : subItem.title;
 
               return (
                 <DropdownMenuItem key={subItem.id} asChild disabled={subItem.disabled}>
@@ -248,7 +255,7 @@ function NavDropdownItem({ item, isActive, isSubItemActive }: NavDropdownItemPro
                     className="flex items-center gap-2"
                   >
                     {SubIcon && <SubIcon />}
-                    <span>{subItem.title}</span>
+                    <span>{subLabel}</span>
                   </Link>
                 </DropdownMenuItem>
               );
@@ -262,14 +269,16 @@ function NavDropdownItem({ item, isActive, isSubItemActive }: NavDropdownItemPro
 
 function NavCollapsibleItem({ item, isActive, defaultOpen, isSubItemActive }: NavCollapsibleItemProps) {
   const Icon = item.icon;
+  const { t } = useTranslation();
+  const label = item.titleKey ? t(item.titleKey) : item.title;
 
   return (
     <Collapsible asChild defaultOpen={defaultOpen} className="group/collapsible">
       <SidebarMenuItem>
         <CollapsibleTrigger asChild>
-          <SidebarMenuButton tooltip={item.title} isActive={isActive} disabled={item.disabled}>
+          <SidebarMenuButton tooltip={label} isActive={isActive} disabled={item.disabled}>
             {Icon && <Icon />}
-            <span>{item.title}</span>
+            <span>{label}</span>
             <ChevronRight className="ml-auto transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
           </SidebarMenuButton>
         </CollapsibleTrigger>
@@ -279,6 +288,7 @@ function NavCollapsibleItem({ item, isActive, defaultOpen, isSubItemActive }: Na
           <SidebarMenuSub>
             {item.subItems.map((subItem) => {
               const SubIcon = subItem.icon;
+              const subLabel = subItem.titleKey ? t(subItem.titleKey) : subItem.title;
 
               return (
                 <SidebarMenuSubItem key={subItem.id}>
@@ -294,7 +304,7 @@ function NavCollapsibleItem({ item, isActive, defaultOpen, isSubItemActive }: Na
                       rel={subItem.newTab ? "noreferrer" : undefined}
                     >
                       {SubIcon && <SubIcon />}
-                      <span>{subItem.title}</span>
+                      <span>{subLabel}</span>
                     </Link>
                   </SidebarMenuSubButton>
                 </SidebarMenuSubItem>

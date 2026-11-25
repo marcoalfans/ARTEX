@@ -13,9 +13,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { api } from "@/lib/api";
 import { auth } from "@/lib/auth";
+import { useTranslation } from "@/lib/i18n";
 
 export default function LoginPage() {
   const router = useRouter();
+  const { t } = useTranslation();
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -55,14 +57,14 @@ export default function LoginPage() {
       .then(({ initialized }) => {
         if (!initialized) router.replace("/setup");
       })
-      .catch(() => setError("Unable to connect to the backend service"))
+      .catch(() => setError(t("auth.unableToConnect")))
       .finally(() => setChecking(false));
   }, [router]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     if (!agreed) {
-      setError("Please read and agree to the Terms of Use first");
+      setError(t("auth.agreeTermsError"));
       return;
     }
     setLoading(true);
@@ -72,7 +74,7 @@ export default function LoginPage() {
       auth.setToken(token);
       window.location.replace("/function/tasks");
     } catch {
-      setError("Incorrect username or password");
+      setError(t("auth.incorrectCredentials"));
     } finally {
       setLoading(false);
     }
@@ -81,7 +83,7 @@ export default function LoginPage() {
   if (checking) {
     return (
       <div role="status" className="flex min-h-dvh items-center justify-center text-muted-foreground">
-        Checking login state…
+        {t("auth.checkingLogin")}
       </div>
     );
   }
@@ -103,22 +105,22 @@ export default function LoginPage() {
       <div className="flex w-full items-center justify-center bg-background p-8 lg:w-2/3">
         <div className="w-full max-w-md space-y-10 py-24 lg:py-32">
           <div className="space-y-4 text-center">
-            <h2 className="text-2xl font-medium tracking-tight">Sign in</h2>
-            <p className="mx-auto max-w-xl text-muted-foreground">Welcome back — enter your password to continue using ARTEX</p>
+            <h2 className="text-2xl font-medium tracking-tight">{t("auth.signIn")}</h2>
+            <p className="mx-auto max-w-xl text-muted-foreground">{t("auth.welcome")}</p>
           </div>
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <div className="space-y-1.5">
-              <Label htmlFor="username">Username</Label>
+              <Label htmlFor="username">{t("auth.username")}</Label>
               <Input id="username" value="ARTEX" readOnly className="bg-muted text-muted-foreground" />
             </div>
             <div className="space-y-1.5">
-              <Label htmlFor="password">Password</Label>
+              <Label htmlFor="password">{t("auth.password")}</Label>
               <Input
                 id="password"
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter your password"
+                placeholder={t("auth.enterPassword")}
                 autoFocus
                 autoComplete="current-password"
               />
@@ -131,19 +133,19 @@ export default function LoginPage() {
                 className="mt-0.5"
               />
               <Label htmlFor="agree-terms" className="text-sm font-normal leading-relaxed text-muted-foreground">
-                I have read and agree to
+                {t("auth.agreeLabel")}
                 <button
                   type="button"
                   onClick={() => setTermsOpen(true)}
                   className="mx-0.5 font-medium text-primary underline-offset-4 hover:underline"
                 >
-                  Terms of Use
+                  {t("auth.termsOfUse")}
                 </button>
               </Label>
             </div>
             {error && <p className="text-sm text-destructive">{error}</p>}
             <Button type="submit" className="w-full" disabled={loading || !password || !agreed}>
-              {loading ? "Signing in..." : "Sign in"}
+              {loading ? t("auth.signingIn") : t("auth.signIn")}
             </Button>
           </form>
         </div>
@@ -290,7 +292,7 @@ export default function LoginPage() {
 
           <DialogFooter className="mx-0 mb-0 flex-col items-stretch gap-2 rounded-b-xl px-6 sm:flex-row sm:items-center sm:justify-between">
             <p className="text-xs text-muted-foreground">
-              {readToEnd ? "You have read all the terms" : "Scroll the terms to the bottom to confirm"}
+              {readToEnd ? t("auth.readAllTerms") : t("auth.scrollTerms")}
             </p>
             <DialogClose asChild>
               <Button
@@ -301,7 +303,7 @@ export default function LoginPage() {
                   setError("");
                 }}
               >
-                I have read and agree to all the terms
+                {t("auth.agreeAllTerms")}
               </Button>
             </DialogClose>
           </DialogFooter>
